@@ -30,9 +30,10 @@ class QuerydslSampleApplicationTests {
 
         JPAQueryFactory query = new JPAQueryFactory(em);
         QAccount qAccount = QAccount.account;
-        Account result = query.selectFrom(qAccount).fetchOne();
+        Account result = query.selectFrom(qAccount)
+                .where(qAccount.name.eq("TEST"))
+                .fetchOne();
 
         Assertions.assertEquals(account.getId(), result.getId());
     }
-
 }
