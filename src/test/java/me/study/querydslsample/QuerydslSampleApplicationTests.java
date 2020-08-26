@@ -1,6 +1,7 @@
 package me.study.querydslsample;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import javax.persistence.EntityManager;
 import me.study.querydslsample.damain.Account;
 import me.study.querydslsample.damain.QAccount;
 import me.study.querydslsample.repository.AccountRepository;
@@ -9,8 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
 
 @SpringBootTest
 @Transactional
@@ -24,7 +23,7 @@ class QuerydslSampleApplicationTests {
 
     @Test
     void contextLoads() {
-
+        System.out.println();
         Account account = Account.builder().id(1L).name("TEST").build();
         accountRepository.save(account);
 
