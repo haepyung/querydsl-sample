@@ -15,6 +15,11 @@ class MemberTest {
   EntityManager em;
 
   @Test
+  void test2() {
+    
+  }
+
+  @Test
   void test() {
     //given
     Team teamA = new Team("teamA");
