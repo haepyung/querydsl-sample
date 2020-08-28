@@ -64,11 +64,16 @@ public class QuerydslBasicTest {
     //when, then JPQL
     assertEquals(findMember.getUsername(), "member1");
 
-    //when, then querydsl
-    Member findMember2 =
-        queryFactory
-            .selectFrom(member)
-            .where(member.username.eq("member1")).fetchOne();
+    //when, then querydsl_1
+    Member findMember2 = queryFactory
+        .selectFrom(member)
+        .where(member.username.eq("member1")).fetchOne();
+
+    //when, then querydsl_2
+    Member findMember3 = queryFactory
+        .select(member)
+        .from(member)
+        .where(member.username.eq("member1")).fetchOne();
 
     assertEquals(findMember2.getUsername(), "member1");
   }
@@ -84,9 +89,8 @@ public class QuerydslBasicTest {
 
     //TYPE_2
     Member findMember2 = queryFactory.selectFrom(member)
-        .where(
-            member.username.eq("member1"),
-            member.age.eq(10))
+        .where(member.username.eq("member1")
+            , member.age.eq(10))
         .fetchOne();
 
     //when &then
