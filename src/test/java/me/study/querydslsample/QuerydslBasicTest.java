@@ -6,8 +6,13 @@ import static me.study.querydslsample.damain.QTeam.team;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -16,6 +21,8 @@ import javax.persistence.PersistenceUnit;
 import me.study.querydslsample.damain.Member;
 import me.study.querydslsample.damain.QMember;
 import me.study.querydslsample.damain.Team;
+import me.study.querydslsample.dto.MemberDto;
+import me.study.querydslsample.dto.QMemberDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -432,5 +439,159 @@ public class QuerydslBasicTest {
      * 2. 쿼리를 2번 분리해서 실행한다
      * 3. nativeSQL를 사용한다
      */
+  }
+
+  @Test
+  void basicCase() {
+    //given
+    List<String> result = queryFactory
+        .select(member.age
+            .when(10).then("열살")
+            .when(20).then("스무살").otherwise("기타"))
+        .from(member)
+        .fetch();
+
+    List<String> result2 = queryFactory
+        .select(new CaseBuilder()
+            .when(member.age.between(0, 20)).then("0 ~ 20살")
+            .when(member.age.between(21, 30)).then("21 ~ 30살")
+            .otherwise("기타"))
+        .from(member)
+        .fetch();
+
+    //when && then
+    for (String s : result) {
+      System.out.println("s:: " + s);
+    }
+
+    for (String s : result2) {
+      System.out.println("s_2:: " + s);
+    }
+  }
+
+  @Test
+  void constant() {
+    //given
+    List<Tuple> result = queryFactory
+        .select(member.username, Expressions.constant("A"))
+        .from(member)
+        .fetch();
+
+    //when & then
+    for (Tuple tuple : result) {
+      System.out.println("tuple:: " + tuple);
+    }
+
+    List<String> result_2 = queryFactory
+        .select(member.username.concat("_").concat(member.age.stringValue()))
+        .from(member)
+        .fetch();
+
+    for (String s : result_2) {
+      System.out.println("s_2:: " + s);
+    }
+  }
+
+  @Test
+  void findDto() {
+    //given_JPQL
+    List<MemberDto> result = em.createQuery(
+        "select new me.study.querydslsample.dto.MemberDto(m.username, m.age) " +
+            "from Member m", MemberDto.class)
+        .getResultList();
+
+    for (MemberDto memberDto : result) {
+      System.out.println("result:: " + memberDto);
+    }
+
+    //given_QUERYDSL  프로퍼티 접근
+    List<MemberDto> result_2 = queryFactory
+        .select(Projections.bean(MemberDto.class,
+            member.username, member.age))
+        .from(member)
+        .fetch();
+
+    //필드 접근
+    List<MemberDto> result_3 = queryFactory
+        .select(Projections.fields(MemberDto.class,
+            member.username, member.age))
+        .from(member)
+        .fetch();
+
+    //생성
+    List<MemberDto> result_4 = queryFactory
+        .select(Projections.constructor(MemberDto.class,
+            member.username, member.age))
+        .from(member)
+        .fetch();
+  }
+
+  @Test
+  void queryProjection() {
+    //given
+    List<MemberDto> result = queryFactory
+        .select(new QMemberDto(member.username, member.age))
+        .from(member)
+        .fetch();
+
+    //when
+    for (MemberDto memberDto : result) {
+      System.out.println("result:: " + memberDto);
+    }
+  }
+
+  @Test
+  void dynamicQuery() {
+    //given
+    String username = "member1";
+    Integer age = 10;
+
+    //when
+    List<Member> result = searchMember1(username, age);
+
+    //then
+    assertEquals(result.size(), 1);
+
+    List<Member> result2 = searchMember2(username, age);
+    assertEquals(result2.size(), 1);
+  }
+
+  private List<Member> searchMember1(String username, Integer age) {
+
+    BooleanBuilder builder = new BooleanBuilder();
+    if (username != null) {
+      builder.and(member.username.eq(username));
+    }
+
+    if (age != null) {
+      builder.and(member.age.eq(age));
+    }
+
+    return queryFactory
+        .selectFrom(member)
+        .where(builder).fetch();
+  }
+
+  private List<Member> searchMember2(String username, Integer age) {
+    return queryFactory
+        .selectFrom(member)
+        .where(usernameEq(username), ageEq(age))
+        .fetch();
+  }
+
+  private BooleanExpression ageEq(Integer age) {
+    return age != null ? member.age.eq(age) : null;
+  }
+
+  private BooleanExpression usernameEq(String username) {
+    return username != null ? member.username.eq(username) : null;
+  }
+
+  private BooleanExpression isTasUser(String username, Integer age) {
+    return usernameEq(username).and(ageEq(age));
+  }
+
+  private BooleanExpression allEq(String username, Integer age) {
+    return usernameEq(username).and(ageEq(age));
   }
 }
