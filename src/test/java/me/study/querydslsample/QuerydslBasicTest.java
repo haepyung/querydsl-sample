@@ -13,6 +13,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -387,7 +388,7 @@ public class QuerydslBasicTest {
     Member findMember = queryFactory
         .selectFrom(member)
         .where(member.age.eq(
-            select(memberSub.age.max()).from(memberSub)
+            JPAExpressions.select(memberSub.age.max()).from(memberSub)
         ))
         .fetchOne();
 
@@ -424,7 +425,7 @@ public class QuerydslBasicTest {
     QMember memberSub = new QMember("memberSub");
     List<Tuple> result = queryFactory
         .select(member.username,
-            select(memberSub.age.avg()).from(memberSub))
+            JPAExpressions.select(memberSub.age.avg()).from(memberSub))
         .from(member)
         .fetch();
 
@@ -587,11 +588,57 @@ public class QuerydslBasicTest {
     return username != null ? member.username.eq(username) : null;
   }
 
-  private BooleanExpression isTasUser(String username, Integer age) {
+  private BooleanExpression allEq(String username, Integer age) {
     return usernameEq(username).and(ageEq(age));
   }
 
-  private BooleanExpression allEq(String username, Integer age) {
-    return usernameEq(username).and(ageEq(age));
+  @Test
+  void bulkUpdate() {
+
+    /*
+    단, 벌크 업데이트 하면 영속성이랑 DB랑 같이 달라진다.
+    */
+    queryFactory
+        .update(member)
+        .set(member.username, "비회원")
+        .where(member.age.lt(28))
+        .execute();
+
+    em.flush();
+    em.clear();
+
+    List<Member> result = queryFactory.selectFrom(member).fetch();
+    for (Member m : result) {
+      System.out.println("member:: " + m);
+    }
+  }
+
+  @Test
+  void bulkAdd() {
+    queryFactory.update(member)
+        .set(member.age, member.age.add(1))
+        .execute();
+  }
+
+  @Test
+  void bulkDelete() {
+    //given
+    queryFactory.delete(member)
+        .where(member.age.gt(18)).execute();
+  }
+
+  @Test
+  void sqlFunction() {
+    //given
+    List<String> result = queryFactory
+        .select(Expressions.stringTemplate
+            ("function('replace', {0}, {1}, {2})",
+                member.username, "member", "M"))
+        .from(member)
+        .fetch();
+    //when  //then
+    for (String s : result) {
+      System.out.println("s:: " + s);
+    }
   }
 }
