@@ -44,8 +44,5 @@ class MemberTest {
     //when
     List<Member> members = em.createQuery("select m from Member m", Member.class)
         .getResultList();
-
-
-    //then
   }
 }
