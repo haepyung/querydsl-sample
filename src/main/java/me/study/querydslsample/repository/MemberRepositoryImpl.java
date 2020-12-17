@@ -1,15 +1,9 @@
 package me.study.querydslsample.repository;
 
-import static me.study.querydslsample.damain.QMember.member;
-import static me.study.querydslsample.damain.QTeam.team;
-import static org.springframework.util.StringUtils.hasText;
-
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.List;
-import javax.persistence.EntityManager;
 import me.study.querydslsample.damain.Member;
 import me.study.querydslsample.dto.MemberSearchCondition;
 import me.study.querydslsample.dto.MemberTeamDto;
@@ -18,6 +12,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.support.PageableExecutionUtils;
+
+import javax.persistence.EntityManager;
+import java.util.List;
+
+import static me.study.querydslsample.damain.QMember.member;
+import static me.study.querydslsample.damain.QTeam.team;
+import static org.springframework.util.StringUtils.hasText;
 
 //public class MemberRepositoryImpl  extends QuerydslRepositorySupport implements MemberRepositoryCustom
 public class MemberRepositoryImpl implements MemberRepositoryCustom {
@@ -127,6 +128,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
             ageLoe(condition.getAgeLoe())
         );
 
+    //stestststsete
     return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     //return new PageImpl<>(content, pageable, total);
   }

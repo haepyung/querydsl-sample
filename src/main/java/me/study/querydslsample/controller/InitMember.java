@@ -1,20 +1,15 @@
 package me.study.querydslsample.controller;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import me.study.querydslsample.damain.Member;
-import me.study.querydslsample.damain.Team;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Profile("local")
 @Component
 @RequiredArgsConstructor
 public class InitMember {
 
+  /*
   private final InitMemberService initMemberService;
 
   @PostConstruct
@@ -41,5 +36,7 @@ public class InitMember {
 
     }
   }
+
+   */
 
 }
